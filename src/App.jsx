@@ -1,33 +1,9 @@
-import { Component } from 'react'
-import Calculator from './components/calculator'
+import Calculator from './components/Calculator'
 
-class ErrorBoundary extends Component {
-  state = { error: null }
-
-  static getDerivedStateFromError(error) {
-    return { error }
-  }
-
-  render() {
-    if (this.state.error) {
-      return (
-        <pre className="m-4 whitespace-pre-wrap rounded-xl bg-rose-100 p-4 text-sm text-rose-800">
-          {String(this.state.error.stack || this.state.error)}
-        </pre>
-      )
-    }
-    return this.props.children
-  }
-}
-
-function App() {
+export default function App() {
   return (
-    <ErrorBoundary>
-      <main className="min-h-screen flex items-center justify-center p-4 bg-slate-100 dark:bg-slate-950">
-        <Calculator />
-      </main>
-    </ErrorBoundary>
+    <main className="flex min-h-dvh items-start justify-center px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center sm:px-6 sm:pt-[max(2rem,env(safe-area-inset-top))] sm:pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <Calculator />
+    </main>
   )
 }
-
-export default App

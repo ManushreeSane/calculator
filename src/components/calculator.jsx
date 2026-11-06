@@ -2,29 +2,22 @@ import { useEffect, useState } from 'react'
 import Display from './Display'
 import Keypad from './Keypad'
 import History from './History'
+import ThemeToggle from './ThemeToggle'
 import useCalculator from '../hooks/useCalculator'
 
 const chip =
-  'rounded-lg px-3 py-1 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 '
+  'rounded-full px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 '
 const chipIdle =
-  'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 '
+  'bg-slate-900/5 text-slate-600 hover:bg-slate-900/10 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/15 '
+const chipActive = 'bg-indigo-600 text-white hover:bg-indigo-500 '
 
 export default function Calculator() {
   const calc = useCalculator()
-  const [sci, setSci] = useState(true)
+  // scientific keys start hidden on phones, visible on larger screens
+  const [sci, setSci] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches,
+  )
   const [showHistory, setShowHistory] = useState(false)
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
-
-  const toggleTheme = () => {
-    const next = !dark
-    setDark(next)
-    document.documentElement.classList.toggle('dark', next)
-    try {
-      localStorage.setItem('theme', next ? 'dark' : 'light')
-    } catch {
-      /* storage unavailable: theme just won't be remembered */
-    }
-  }
 
   // keyboard support
   useEffect(() => {
@@ -59,19 +52,17 @@ export default function Calculator() {
       : ''
 
   return (
-    <div className="flex w-full max-w-4xl flex-col items-center gap-4 md:flex-row md:items-start md:justify-center">
-      <section className="w-full max-w-md rounded-3xl bg-white p-4 shadow-xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10">
-        <div className="mb-3 flex items-center justify-between">
-          <h1 className="font-semibold text-slate-700 dark:text-slate-200">Calculator</h1>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className={chip + chipIdle}
-              aria-label="Switch between light and dark theme"
-            >
-              {dark ? 'Light' : 'Dark'}
-            </button>
+    <div className="flex w-full max-w-5xl flex-col items-center gap-4 md:flex-row md:items-start md:justify-center md:gap-6">
+      <section className="w-full min-w-0 max-w-md rounded-3xl bg-white/70 p-3 shadow-[0_24px_60px_-24px_rgba(79,70,229,0.45)] ring-1 ring-white/70 backdrop-blur-xl sm:p-5 lg:max-w-lg dark:bg-slate-900/60 dark:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] dark:ring-white/10">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500" />
+            <h1 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Calculator
+            </h1>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
             <button
               type="button"
               onClick={calc.toggleAngle}
@@ -84,19 +75,20 @@ export default function Calculator() {
               type="button"
               onClick={() => setSci((s) => !s)}
               aria-pressed={sci}
-              className={chip + (sci ? 'bg-indigo-600 text-white hover:bg-indigo-500' : chipIdle)}
+              className={chip + (sci ? chipActive : chipIdle)}
             >
               Sci
             </button>
             <button
               type="button"
               onClick={() => setShowHistory((s) => !s)}
-              className={chip + chipIdle + 'md:hidden'}
+              aria-pressed={showHistory}
+              className={chip + (showHistory ? chipActive : chipIdle) + 'md:hidden'}
             >
               History
             </button>
           </div>
-        </div>
+        </header>
 
         <Display
           expression={expression}
@@ -109,7 +101,10 @@ export default function Calculator() {
       </section>
 
       <History
-        className={'w-full max-w-md md:w-64 ' + (showHistory ? '' : 'hidden md:block')}
+        className={
+          'w-full max-w-md md:w-64 md:max-w-none md:shrink-0 lg:w-72 ' +
+          (showHistory ? '' : 'hidden md:block')
+        }
         history={calc.history}
         onClear={calc.clearHistory}
         onSelect={calc.selectHistory}
